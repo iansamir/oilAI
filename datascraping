@@ -1,0 +1,13 @@
+install.packages('Quandl')
+library(Quandl)
+
+oil <- Quandl('OPEC/ORB')
+
+oil$lag1 = c(-diff(oil$Value), 0)
+oil$lag2 = c(oil$lag1[2:length(oil$lag1)], 0)
+oil$lag3 = c(oil$lag2[2:length(oil$lag2)], 0)
+oil$lag4 = c(oil$lag3[2:length(oil$lag3)], 0)
+oil$lag5 = c(oil$lag4[2:length(oil$lag4)], 0)
+
+direction = ifelse(oil$lag1 > 0, 'Up', 'Down')
+oil$direction = as.factor(direction)
