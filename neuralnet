@@ -1,0 +1,28 @@
+install.packages('neuralnet')
+library(neuralnet)
+trainset <- oil[25:1000,]
+testset <- oil[1:25,]
+nn <- neuralnet(formula= direction ~ lag2 + lag3 + lag4 + lag5 + Value ,data=trainset, 
+                hidden=3, threshold = 0.01, lifesign = "full",lifesign.step = 5)
+
+
+test = subset(testset, select = c('lag2', 'lag3', 'lag4', 'lag5', 'Value'))
+nn.results = compute(nn, test)
+results = data.frame(actual = testset$direction, prediction = nn.results$net.result)
+results = subset(results, select = c('actual', 'prediction.1'))
+
+results$predictionUP = ifelse(results$prediction.1 > 0.6, 'Up', '?')
+results$predictionDOWN = ifelse(results$prediction.1 < 0.4, 'Down', '?')
+results$strategy = c('BUY', '', 'BUY', 'SHORT', '','', 'BUY', 'SHORT',
+                     'BUY', '', '', 'BUY', '', '', '', '', 'BUY', '', 'BUY',
+                     'BUY', 'BUY', '', 'SHORT', 'BUY', 'BUY')
+
+results$change = testset$lag1
+results$unitprofit = ifelse(results$strategy == '', 0, results$change)
+results$unitprofit[4] = -results$unitprofit[4]
+results$unitprofit[8] = -results$unitprofit[8]
+results$unitprofit[23] = -results$unitprofit[23]
+
+#Say we trade 100K a day for 25 days, our net profit is:
+profit = sum(results$unitprofit) * 25 * 100000
+profit
