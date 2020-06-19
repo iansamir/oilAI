@@ -1,0 +1,9 @@
+ supmodel = svm(direction ~., data = oil)
+ summary(supmodel)
+ 
+ predicted = predict(model, oil[1:25,])
+ table(predicted, oil$direction)
+ 
+ tune.results = tune(svm, train.x = oil[1:25,], train.y = oil$direction[1:25],
+                     kernel = 'radial', ranges = list(cost = c(0.1, 1, 10),
+                                                      gamma = c(0.5,1,2)))
