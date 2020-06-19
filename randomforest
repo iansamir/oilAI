@@ -1,0 +1,18 @@
+library(caret)
+library (rpart)
+library (randomForest)
+forest1= randomForest(direction~lag2+lag3+lag4+lag5, data=oil)#,ntree=500, imprtance=TRUE)
+ 
+ print(forest1)
+ importance(forest1)
+  
+ fit.tree <- rpart(direction~lag2+lag3+lag4+lag5, data=oil)
+ 
+ printcp(fit.tree)
+ plotcp(fit.tree)
+ 
+ summary(fit.tree)
+ par(mfrow=c(1,2))
+ rsq.rpart(fit.tree)
+ plot(fit.tree, uniform=TRUE, main="Classification Tree Stock Direction")
+ text(fit.tree, use.n = TRUE, all=TRUE, cex=.8)
