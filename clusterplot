@@ -1,0 +1,6 @@
+ oil.cluster = kmeans(oil[1:25], 3, nstart = 20)
+ table(oil.cluster$cluster, oil$direction[1:25])
+ library(cluster)
+ clusterplot = clusplot(oil, oil.cluster$cluster, color = T, shade = T,
+          labels = 0, lines = 0)
+ 
