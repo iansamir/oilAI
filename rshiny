@@ -1,0 +1,128 @@
+library(shinydashboard)
+library(tidyr)
+library(tibble)
+
+
+options = c('date' = 'Date', 'lag1' = 'lag1', 'lag2' = 'lag2', 'lag3' = 'lag3', 'lag4' = 'lag4', 'price' = 'Value',
+            'direction' = 'direction')
+options2 = c('lag2' = 'lag2', 'lag2 + lag3' = 'lag3', 'lag2 + lag3 + lag4' = 'lag4')
+df.options = data.frame(options)
+df.lv = rownames_to_column(df.options)
+colnames(df.lv) = c('label', 'value')
+
+# Define UI for application that draws a histogram
+ui <- dashboardPage(
+
+    # Application title
+    dashboardHeader(
+    title = "oil AI"
+    ),
+
+    dashboardSidebar(),
+    dashboardBody(
+      fluidRow(
+       
+        
+        box(title = 'Price of Oil',
+            background = 'light-blue',
+            status = 'primary',
+            plotOutput('prices', height = 250)),
+        
+        box(title = 'Profits',
+            background = 'red',
+            plotOutput('profits', height = 250)),
+        box(title = 'neural network',
+            background = 'orange',
+            plotOutput('neuralnet', height = 250)),
+        
+        box(title = 'k-means cluster',
+            status = 'primary',
+            background = 'aqua',
+            plotOutput('cluster', height = 250)),
+
+       valueBoxOutput('foresterror')
+      
+      )
+    
+    
+    )
+)
+
+ui = fluidPage(
+  selectInput('X', 'x-variable', options),
+  selectInput('Y', 'y-variable:', options),
+  selectInput('Z', 'model:', options2),
+  plotOutput('scatter'),
+  
+  box(title = 'k-means cluster',
+      status = 'primary',
+      background = 'aqua',
+      plotOutput('cluster', height = 250)),
+  
+  box(title = 'neural network',
+      background = 'orange',
+      plotOutput('neuralnet', height = 250))
+)
+
+  
+
+# Define server logic required to draw a histogram
+server <- function(input, output) {
+  
+    selections = reactive({
+      oil[1:25, c(input$X, input$Y)]
+    })
+    
+    output$scatter = renderPlot({
+      x_column = selections()[,1]
+      y_column = selections()[,2]
+        
+      
+      X_Label = df.lv$label[which(df.lv$value == input$X)]
+      Y_Label = df.lv$label[which(df.lv$value == input$Y)]
+      
+      plot(main = 'last 25 days of oil', 
+           x = x_column, y = y_column, xlab = 'x', ylab = 'y',
+           col = 'blue', type = 'o')
+      
+    })
+
+    output$prices <- renderPlot({
+        plot(results$day, results$price, 
+             xlab = 'day', ylab = 'price', main = 'oil prices in $',
+             type = 'o', col='blue')
+    })
+    
+    output$profits <- renderPlot({
+      plot(results$day, results$unitprofit, 
+           xlab = 'day', ylab = 'profit', main = 'AI profits',
+           type = 'o', col='green')
+    })
+    
+    output$neuralnet = renderPlot({
+      plot(nn)
+    })
+    
+    output$cluster = renderPlot({
+      clusplot(main = 'clusterplot', oil[1:25,], oil.cluster$cluster, color = T, shade = T, labels = 0, lines = 0)
+    })
+ 
+    
+    output$profitBox <- renderValueBox({
+      valueBox(
+        round(sum(results$unitprofit), 3), 'net profit',
+        color = 'blue'
+      )
+    })
+    
+    output$foresterror <- renderValueBox({
+      valueBox(
+        round(foresterror, 3), 'random forest error',
+        color = 'blue'
+      )
+    })
+    
+}
+
+# Run the application 
+shinyApp(ui = ui, server = server)
